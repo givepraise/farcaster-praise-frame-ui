@@ -1,11 +1,13 @@
 /** @jsxImportSource frog/jsx */
 
-import { Button, Frog, TextInput, parseEther } from 'frog'
+import { Button, Frog } from 'frog'
 import { devtools } from 'frog/dev'
 // import { neynar } from 'frog/hubs'
 import { handle } from 'frog/next'
 import { serveStatic } from 'frog/serve-static'
 import {abi} from "@/src/abi";
+import { AbiCoder } from "ethers";
+import * as url from "node:url";
 
 const app = new Frog({
   assetsPath: '/',
@@ -17,6 +19,8 @@ const app = new Frog({
 
 // export const runtime = 'edge'
 app.frame('/', (c) => {
+    const reqUrl = c.req.url
+    const params = reqUrl.split('?')[1]
     return c.res({
         action: '/finish',
         image: (
@@ -51,7 +55,7 @@ app.frame('/', (c) => {
             </div>
         ),
         intents: [
-            <Button.Transaction target="/attest">Attest</Button.Transaction>,
+            <Button.Transaction target={"/attest?"+params}>Attest</Button.Transaction>,
         ]
     })
 })
@@ -68,18 +72,25 @@ app.frame('/finish', (c) => {
 })
 
 app.transaction('/attest', (c) => {
+    const reqUrl = c.req.url
+    const queryData = url.parse(reqUrl, true).query;
+    const { reason, channel, recipient, giver } = queryData
+    const abiCoder = new AbiCoder();
+    const types = ["bool", "string", "string", "string"];
+    const values = [true, giver, channel, reason];
+    const encodedData = abiCoder.encode(types, values) as `0x${string}`;
     return c.contract({
         abi,
         chainId: 'eip155:10',
         functionName: 'attest',
         args: [{
-            schema: '0xa76299ae6a66b66ff48344f36c0fa657a0a9eeb6721248311df9cf25748e4405',
+            schema: '0xa76299ae6a66b66ff48344f36c0fa657a0a9eeb6721248311df9cf25748e4405', // Attestation schema
             data: {
                 revocable: true,
-                recipient: '0x4236864edA3B7863B4E543c2661FC14029e5fBEC',
+                recipient: recipient as `0x${string}`,
                 refUID: '0x0000000000000000000000000000000000000000000000000000000000000000',
                 expirationTime: 0n,
-                data: '0x0000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000c00000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000572616d696e0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008676976657468696f0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010666f72206372656174696e672065746800000000000000000000000000000000',
+                data: encodedData,
                 value: 0n,
             },
         }],
