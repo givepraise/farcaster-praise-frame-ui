@@ -71,7 +71,9 @@ app.frame('/finish', (c) => {
     })
 })
 
-app.transaction('/attest', (c) => {
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+app.transaction('/attest', async (c) => {
     const reqUrl = c.req.url
     const queryData = url.parse(reqUrl, true).query;
     const { reason, channel, recipient, giver } = queryData
@@ -79,6 +81,7 @@ app.transaction('/attest', (c) => {
     const types = ["bool", "string", "string", "string"];
     const values = [true, giver, channel, reason];
     const encodedData = abiCoder.encode(types, values) as `0x${string}`;
+    await wait(1000)
     return c.contract({
         abi,
         chainId: 'eip155:10',
@@ -94,7 +97,7 @@ app.transaction('/attest', (c) => {
                 value: 0n,
             },
         }],
-        to: '0x4200000000000000000000000000000000000021',
+        to: '0x4200000000000000000000000000000000000021', // Attestation smart contract in OP
     })
 })
 
