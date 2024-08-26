@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "deploy": "vercel",
+    "deploy": "vercel --prod",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

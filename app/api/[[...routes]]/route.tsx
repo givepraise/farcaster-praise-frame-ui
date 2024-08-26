@@ -12,9 +12,10 @@ import frogRoutes from "@/src/frogRoutes";
 import {imageDescription, imageWrapper} from "@/src/frogStyles";
 
 const feeRecipient = '0xAB5b57832498a2B541AAA2c448e2E79d872564E0'
-const feeInEth = '0.000001' // 0.000018
-const attestationSmartContract = '0x4200000000000000000000000000000000000021' // Attestation smart contract in OP
-const attestationSchema = '0xa76299ae6a66b66ff48344f36c0fa657a0a9eeb6721248311df9cf25748e4405' // Attestation schema
+const feeInEth = '0.000001' // should be 0.000018 on prod
+const attestationSmartContract = '0x4200000000000000000000000000000000000021' // Attestation smart contract in Base
+const attestationSchema = '0x82c2ec8ec89cf1d13022ff0867744f1cecf932faa4fe334aa1bb443edbfee3fa' // Attestation schema
+const chainId = 'eip155:8453' // Base
 
 const app = new Frog({
   assetsPath: '/',
@@ -35,7 +36,7 @@ app.frame(frogRoutes.home, (c) => {
             <div style={imageWrapper}>
                 {`Let's mint an on-chain attestation for @${recipientName} to keep record!`}
                 <div style={imageDescription}>
-                    Make sure you have a bit of ETH on OP for gas
+                    Make sure you have a bit of ETH on Base for gas
                 </div>
             </div>
         ),
@@ -57,7 +58,7 @@ app.frame(frogRoutes.finish, (c) => {
 
 app.transaction(frogRoutes.feesTx, (c) => {
     return c.send({
-        chainId: 'eip155:10',
+        chainId,
         to: feeRecipient,
         value: parseEther(feeInEth),
     })
@@ -73,7 +74,7 @@ app.frame(frogRoutes.attestFrame, (c) => {
             <div style={imageWrapper}>
                 {`Let's mint an on-chain attestation for @${recipientName} to keep record!`}
                 <div style={imageDescription}>
-                    Make sure you have a bit of ETH on OP for gas
+                    Make sure you have a bit of ETH on Base for gas
                 </div>
             </div>
         ),
@@ -86,14 +87,14 @@ app.frame(frogRoutes.attestFrame, (c) => {
 app.transaction(frogRoutes.attestTx, async (c) => {
     const {frameData} = c
     const queryData = url.parse(frameData?.url || '', true).query;
-    const { reason, channel, recipientAddress, giver } = queryData
+    const { reason, channel, recipientAddress } = queryData
     const abiCoder = new AbiCoder();
-    const types = ["bool", "string", "string", "string"];
-    const values = [true, giver, channel, reason];
+    const types = ["address", "uint16", "string", "string", "string", "string", "string", "string", "uint16"];
+    const values = [frameData?.address, 0, "Farcaster", "www.givepraise.xyz", channel, reason, "Praise", "Created using Praise bot on Farcaster", 0];
     const encodedData = abiCoder.encode(types, values) as `0x${string}`;
     return c.contract({
         abi,
-        chainId: 'eip155:10',
+        chainId,
         functionName: 'attest',
         args: [{
             schema: attestationSchema,
