@@ -87,10 +87,10 @@ app.frame(frogRoutes.attestFrame, (c) => {
 app.transaction(frogRoutes.attestTx, async (c) => {
     const {frameData} = c
     const queryData = url.parse(frameData?.url || '', true).query;
-    const { reason, channel, recipientAddress } = queryData
+    const { reason, channel, recipientAddress, giver, recipientName } = queryData
     const abiCoder = new AbiCoder();
     const types = ["address", "uint16", "string", "string", "string", "string", "string", "string", "uint16"];
-    const values = [frameData?.address, 0, "Farcaster", "www.givepraise.xyz", channel, reason, "Praise", "Created using Praise bot on Farcaster", 0];
+    const values = [frameData?.address, 0, channel, "www.givepraise.xyz", recipientName, reason, giver, "Created using Praise bot on Farcaster", 0];
     const encodedData = abiCoder.encode(types, values) as `0x${string}`;
     return c.contract({
         abi,
