@@ -11,7 +11,7 @@ import * as url from "node:url";
 import frogRoutes from "@/src/frogRoutes";
 import {imageDescription, imageWrapper} from "@/src/frogStyles";
 
-const feeRecipient = '0xAB5b57832498a2B541AAA2c448e2E79d872564E0'
+const feeRecipient = '0xAB5b57832498a2B541AAA2c448e2E79d872564E0' // Paslar address
 const feeInEth = '0.000001' // should be 0.000018 on prod
 const attestationSmartContract = '0x4200000000000000000000000000000000000021' // Attestation smart contract in Base
 const attestationSchema = '0x82c2ec8ec89cf1d13022ff0867744f1cecf932faa4fe334aa1bb443edbfee3fa' // Attestation schema
