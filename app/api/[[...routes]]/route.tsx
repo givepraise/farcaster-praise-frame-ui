@@ -47,6 +47,28 @@ app.frame(frogRoutes.home, (c) => {
 })
 
 app.frame(frogRoutes.finish, (c) => {
+    const {frameData, transactionId} = c
+    const queryData = url.parse(frameData?.url || '', true).query;
+    const { praiseHash } = queryData
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+    const raw = JSON.stringify({
+        praiseHash,
+        attestationHash: transactionId
+    });
+
+    const requestOptions: RequestInit = {
+        method: "POST",
+        headers: myHeaders,
+        body: raw,
+        redirect: "follow"
+    };
+
+    fetch("https://farcasterbot.givepraise.xyz/reply-attestation", requestOptions)
+        .then((response) => response.text())
+        .then((result) => console.log(result))
+        .catch((error) => console.error(error));
     return c.res({
         image: (
             <div style={imageWrapper}>
