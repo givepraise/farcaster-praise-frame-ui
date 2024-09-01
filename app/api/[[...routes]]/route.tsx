@@ -46,16 +46,22 @@ app.frame(frogRoutes.home, (c) => {
     })
 })
 
-app.frame(frogRoutes.finish, (c) => {
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+app.frame(frogRoutes.finish, async (c) => {
     const {frameData, transactionId} = c
     const queryData = url.parse(frameData?.url || '', true).query;
     const { praiseHash } = queryData
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
 
+    console.log('-----------------')
+    console.log('raw', transactionId, praiseHash)
+    console.log('-----------------')
+
     const raw = JSON.stringify({
         praiseHash,
-        attestationHash: transactionId
+        txHash: transactionId
     });
 
     const requestOptions: RequestInit = {
@@ -65,10 +71,20 @@ app.frame(frogRoutes.finish, (c) => {
         redirect: "follow"
     };
 
+    await wait(3000);
+
     fetch("https://farcasterbot.givepraise.xyz/reply-attestation", requestOptions)
-        .then((response) => response.text())
-        .then((result) => console.log(result))
-        .catch((error) => console.error(error));
+        .then(response => response.text())
+        .then(result => {
+            console.log('-----------------')
+            console.log('result', result)
+            console.log('-----------------')
+        })
+        .catch(error => console.error(error));
+
+        // .then((response) => response.text())
+        // .then((result) => console.log(result))
+        // .catch((error) => console.error(error));
     return c.res({
         image: (
             <div style={imageWrapper}>
