@@ -46,8 +46,6 @@ app.frame(frogRoutes.home, (c) => {
     })
 })
 
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-
 app.frame(frogRoutes.finish, async (c) => {
     const {frameData, transactionId} = c
     const queryData = url.parse(frameData?.url || '', true).query;
@@ -71,8 +69,6 @@ app.frame(frogRoutes.finish, async (c) => {
         redirect: "follow"
     };
 
-    await wait(3000);
-
     fetch("https://farcasterbot.givepraise.xyz/reply-attestation", requestOptions)
         .then(response => response.text())
         .then(result => {
@@ -80,7 +76,11 @@ app.frame(frogRoutes.finish, async (c) => {
             console.log('result', result)
             console.log('-----------------')
         })
-        .catch(error => console.error(error));
+        .catch(error => {
+            console.log('-----------------')
+            console.error('error', error)
+            console.log('-----------------')
+        });
 
         // .then((response) => response.text())
         // .then((result) => console.log(result))
