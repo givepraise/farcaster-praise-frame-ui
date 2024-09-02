@@ -1,21 +1,20 @@
 /** @jsxImportSource frog/jsx */
 
-import {Button, Frog, parseEther} from 'frog'
+import {Button, Frog} from 'frog'
 import { devtools } from 'frog/dev'
 import { handle } from 'frog/next'
 import { serveStatic } from 'frog/serve-static'
 import { neynar } from 'frog/hubs'
 import {abi} from "@/src/abi";
-import { AbiCoder } from "ethers";
 import * as url from "node:url";
 import frogRoutes from "@/src/frogRoutes";
 import {imageDescription, imageWrapper} from "@/src/frogStyles";
+import {NETWORK_IDS} from "@/src/helpers/constants";
 
-const feeRecipient = '0xAB5b57832498a2B541AAA2c448e2E79d872564E0' // Paslar address
-const feeInEth = '0.000001' // should be 0.000018 on prod
-const attestationSmartContract = '0x4200000000000000000000000000000000000021' // Attestation smart contract in Base
-const attestationSchema = '0x82c2ec8ec89cf1d13022ff0867744f1cecf932faa4fe334aa1bb443edbfee3fa' // Attestation schema
-const chainId = 'eip155:8453' // Base
+const chainId = NETWORK_IDS.BASE_SEPOLIA;
+const attestationSmartContract = '0xc7970e9c5aa18a7a9bf21c322bfa8ecebe7b7a26' // Our smart contract in Base
+const eipChainId = `eip155:${chainId}` as "eip155:84532" // Base
+const sendAttestationUrl = "https://farcasterbot.givepraise.xyz/reply-attestation" // Send attestation URL to user in another cast
 
 const app = new Frog({
   assetsPath: '/',
@@ -31,7 +30,7 @@ app.frame(frogRoutes.home, (c) => {
     const queryData = url.parse(reqUrl, true).query;
     const { recipientName } = queryData
     return c.res({
-        action: frogRoutes.attestFrame,
+        action: frogRoutes.finish,
         image: (
             <div style={imageWrapper}>
                 {`Let's mint an on-chain attestation for @${recipientName} to keep record!`}
@@ -41,10 +40,12 @@ app.frame(frogRoutes.home, (c) => {
             </div>
         ),
         intents: [
-            <Button.Transaction target={frogRoutes.feesTx}>Pay the fee first!</Button.Transaction>,
+            <Button.Transaction target={frogRoutes.attestTx}>Let's mint attestation!</Button.Transaction>,
         ]
     })
 })
+
+const wait = async (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 app.frame(frogRoutes.finish, async (c) => {
     const {frameData, transactionId} = c
@@ -69,7 +70,7 @@ app.frame(frogRoutes.finish, async (c) => {
         redirect: "follow"
     };
 
-    fetch("https://farcasterbot.givepraise.xyz/reply-attestation", requestOptions)
+    fetch(sendAttestationUrl, requestOptions)
         .then(response => response.text())
         .then(result => {
             console.log('-----------------')
@@ -82,9 +83,9 @@ app.frame(frogRoutes.finish, async (c) => {
             console.log('-----------------')
         });
 
-        // .then((response) => response.text())
-        // .then((result) => console.log(result))
-        // .catch((error) => console.error(error));
+    // Wait for fetch to send the request
+    await wait(3000);
+
     return c.res({
         image: (
             <div style={imageWrapper}>
@@ -94,58 +95,29 @@ app.frame(frogRoutes.finish, async (c) => {
     })
 })
 
-app.transaction(frogRoutes.feesTx, (c) => {
-    return c.send({
-        chainId,
-        to: feeRecipient,
-        value: parseEther(feeInEth),
-    })
-})
-
-app.frame(frogRoutes.attestFrame, (c) => {
-    const {frameData} = c
-    const queryData = url.parse(frameData?.url || "", true).query;
-    const {recipientName} = queryData
-    return c.res({
-        action: frogRoutes.finish,
-        image: (
-            <div style={imageWrapper}>
-                {`Let's mint an on-chain attestation for @${recipientName} to keep record!`}
-                <div style={imageDescription}>
-                    Make sure you have a bit of ETH on Base for gas
-                </div>
-            </div>
-        ),
-        intents: [
-            <Button.Transaction target={frogRoutes.attestTx}>Now let's mint!</Button.Transaction>,
-        ]
-    })
-})
-
 app.transaction(frogRoutes.attestTx, async (c) => {
     const {frameData} = c
     const queryData = url.parse(frameData?.url || '', true).query;
     const { reason, channel, recipientAddress, giver, recipientName } = queryData
-    const abiCoder = new AbiCoder();
-    const types = ["address", "uint16", "string", "string", "string", "string", "string", "string", "uint16"];
-    const values = [frameData?.address, 0, channel, "www.givepraise.xyz", recipientName, reason, giver, "Created using Praise bot on Farcaster", 0];
-    const encodedData = abiCoder.encode(types, values) as `0x${string}`;
     return c.contract({
         abi,
-        chainId,
-        functionName: 'attest',
-        args: [{
-            schema: attestationSchema,
-            data: {
-                revocable: true,
-                recipient: recipientAddress as `0x${string}`,
-                refUID: '0x0000000000000000000000000000000000000000000000000000000000000000',
-                expirationTime: 0n,
-                data: encodedData,
-                value: 0n,
-            },
+        chainId: eipChainId,
+        functionName: 'attestPraise',
+        args: [
+            recipientAddress as `0x${string}`,
+            {
+            from: frameData?.address as `0x${string}`,
+            amount: 0,
+            platform: channel as string,
+            url: "www.givepraise.xyz" as string,
+            context: recipientName as string,
+            skill: reason as string,
+            tag: giver as string,
+            note: "Created using Praise bot on Farcaster",
+            weight: 0
         }],
         to: attestationSmartContract,
+        value: 100000000000n,
     })
 })
 
