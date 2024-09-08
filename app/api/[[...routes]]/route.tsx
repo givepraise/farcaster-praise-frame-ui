@@ -33,9 +33,9 @@ app.frame(frogRoutes.home, (c) => {
         action: frogRoutes.finish,
         image: (
             <div style={imageWrapper}>
-                {`Let's mint an on-chain attestation for @${recipientName} to keep record!`}
+                {`Let’s spread some love and mint an on-chain Praise attestation for @${recipientName}!`}
                 <div style={imageDescription}>
-                    Make sure you have a bit of ETH on Base for gas
+                    Make sure you have some ETH on Base to cover the gas.
                 </div>
             </div>
         ),
