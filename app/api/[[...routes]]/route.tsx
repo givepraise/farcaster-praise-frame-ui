@@ -84,7 +84,7 @@ app.frame(frogRoutes.finish, async (c) => {
         });
 
     // Wait for fetch to send the request
-    await wait(3000);
+    await wait(2000);
 
     return c.res({
         image: (
