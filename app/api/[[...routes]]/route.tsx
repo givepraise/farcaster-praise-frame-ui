@@ -40,7 +40,7 @@ app.frame(frogRoutes.home, (c) => {
             </div>
         ),
         intents: [
-            <Button.Transaction target={frogRoutes.attestTx}>Let's mint attestation!</Button.Transaction>,
+            <Button.Transaction target={frogRoutes.attestTx}>Mint!</Button.Transaction>,
         ]
     })
 })
