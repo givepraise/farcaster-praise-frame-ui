@@ -31,14 +31,15 @@ app.frame(frogRoutes.home, (c) => {
     const { recipientName } = queryData
     return c.res({
         action: frogRoutes.finish,
-        image: (
-            <div style={imageWrapper}>
-                {`Let’s spread some love and mint an on-chain Praise attestation for @${recipientName}!`}
-                <div style={imageDescription}>
-                    Make sure you have some ETH on Base to cover the gas.
-                </div>
-            </div>
-        ),
+        image: 'https://giveth.mypinata.cloud/ipfs/QmSPxSt1BaNwKLMNtHmsnXnpnGX9EyzEjkcvU7MAPEFS2e',
+        // image: (
+        //     <div style={imageWrapper}>
+        //         {`Let’s spread some love and mint an on-chain Praise attestation for @${recipientName}!`}
+        //         <div style={imageDescription}>
+        //             Make sure you have some ETH on Base to cover the gas.
+        //         </div>
+        //     </div>
+        // ),
         intents: [
             <Button.Transaction target={frogRoutes.attestTx}>Mint!</Button.Transaction>,
         ]
@@ -117,7 +118,7 @@ app.transaction(frogRoutes.attestTx, async (c) => {
             weight: 0
         }],
         to: attestationSmartContract,
-        value: 100000000000n,
+        value: 30000000000000n,
     })
 })
 
