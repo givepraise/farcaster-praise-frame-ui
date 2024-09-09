@@ -11,9 +11,9 @@ import frogRoutes from "@/src/frogRoutes";
 import {imageDescription, imageWrapper} from "@/src/frogStyles";
 import {NETWORK_IDS} from "@/src/helpers/constants";
 
-const chainId = NETWORK_IDS.BASE_SEPOLIA;
-const attestationSmartContract = '0xc7970e9c5aa18a7a9bf21c322bfa8ecebe7b7a26' // Our smart contract in Base
-const eipChainId = `eip155:${chainId}` as "eip155:84532" // Base
+const chainId = NETWORK_IDS.BASE_MAINNET;
+const attestationSmartContract = '0x5704e9f80ab8dbeba571135e48bda18c2259b979' // Our smart contract in Base
+const eipChainId = `eip155:${chainId}` as "eip155:8453" // Base
 const sendAttestationUrl = "https://farcasterbot.givepraise.xyz/reply-attestation" // Send attestation URL to user in another cast
 
 const app = new Frog({
