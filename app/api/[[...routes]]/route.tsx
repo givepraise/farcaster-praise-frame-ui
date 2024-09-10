@@ -12,8 +12,8 @@ import {imageDescription, imageWrapper} from "@/src/frogStyles";
 import {NETWORK_IDS} from "@/src/helpers/constants";
 import {AbiCoder} from "ethers";
 
-const chainId = NETWORK_IDS.BASE_SEPOLIA;
-const attestationSmartContract = '0x47C3AadAc3b12d709F3523c88036f5eC031abF2C' // Our smart contract in Base
+const chainId = NETWORK_IDS.BASE_MAINNET;
+const attestationSmartContract = '0xabdf10bbbccef43942dc8a1da8ae27ddda1d47d8' // Our smart contract in Base
 const eipChainId = `eip155:${chainId}` as "eip155:8453" // Base
 const sendAttestationUrl = "https://farcasterbot.givepraise.xyz/reply-attestation" // Send attestation URL to user in another cast
 
