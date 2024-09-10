@@ -16,6 +16,7 @@ const chainId = NETWORK_IDS.BASE_MAINNET;
 const attestationSmartContract = '0xabdf10bbbccef43942dc8a1da8ae27ddda1d47d8' // Our smart contract in Base
 const eipChainId = `eip155:${chainId}` as "eip155:8453" // Base
 const sendAttestationUrl = "https://farcasterbot.givepraise.xyz/reply-attestation" // Send attestation URL to user in another cast
+const neynarFetchCastUrl = 'https://api.neynar.com/v2/farcaster/cast?type=hash&identifier='
 
 const app = new Frog({
   assetsPath: '/',
@@ -27,9 +28,9 @@ const app = new Frog({
 
 // export const runtime = 'edge'
 app.frame(frogRoutes.home, (c) => {
-    const reqUrl = c.req.url
-    const queryData = url.parse(reqUrl, true).query;
-    const { recipientName } = queryData
+    // const reqUrl = c.req.url
+    // const queryData = url.parse(reqUrl, true).query;
+    // const { recipientName } = queryData
     return c.res({
         action: frogRoutes.finish,
         image: 'https://giveth.mypinata.cloud/ipfs/QmXZgUWie1dDcjq75V6jEWigg6Hifwj4o4VM2sSJGxTwv1',
@@ -100,10 +101,31 @@ app.frame(frogRoutes.finish, async (c) => {
 app.transaction(frogRoutes.attestTx, async (c) => {
     const {frameData} = c
     const queryData = url.parse(frameData?.url || '', true).query;
-    const { reason, channel, recipientAddress, giver, recipientName } = queryData
+    // const { reason, channel, recipientAddress, giver, recipientName } = queryData
+    const { praiseHash } = queryData
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.append("api_key", process.env.NEYNAR_API_KEY!);
+    const requestOptions: RequestInit = {
+        method: "GET",
+        headers: myHeaders,
+        redirect: "follow"
+    };
+    const praiseCast = await fetch(neynarFetchCastUrl + praiseHash, requestOptions)
+    const praiseCastData = await praiseCast.json()
+    const { channel, author, text, mentioned_profiles } = praiseCastData.cast;
+    console.log('-----------------')
+    console.log('praiseCast', channel?.name, author.username, text, mentioned_profiles)
+    console.log('-----------------')
+    const giver = author.username
+    // TODO: Should consider only first mention as praise receiver
+    const praiseReceiver = mentioned_profiles.find((profile: any) => profile.username !== process.env.PRAISE_FARCASTER_HANDLE)
+    const recipientName = praiseReceiver.username
+    const reason = text.split(praiseReceiver.username)[1]
+    const recipientAddress = praiseReceiver.verified_addresses.eth_addresses[0] || praiseReceiver.custody_address
     const abiCoder = new AbiCoder();
     const types = ["address", "uint16", "string", "string", "string", "string", "string", "string", "uint16"];
-    const values = [frameData?.address, 0, channel, "www.givepraise.xyz", recipientName, reason, giver, "Created using Praise bot on Farcaster", 0];
+    const values = [frameData?.address, 0, channel?.name, "www.givepraise.xyz", recipientName, reason, giver, "Created using Praise bot on Farcaster", 0];
     const encodedData = abiCoder.encode(types, values) as `0x${string}`;
     return c.contract({
         abi,
