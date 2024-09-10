@@ -10,9 +10,10 @@ import * as url from "node:url";
 import frogRoutes from "@/src/frogRoutes";
 import {imageDescription, imageWrapper} from "@/src/frogStyles";
 import {NETWORK_IDS} from "@/src/helpers/constants";
+import {AbiCoder} from "ethers";
 
-const chainId = NETWORK_IDS.BASE_MAINNET;
-const attestationSmartContract = '0x5704e9f80ab8dbeba571135e48bda18c2259b979' // Our smart contract in Base
+const chainId = NETWORK_IDS.BASE_SEPOLIA;
+const attestationSmartContract = '0x47C3AadAc3b12d709F3523c88036f5eC031abF2C' // Our smart contract in Base
 const eipChainId = `eip155:${chainId}` as "eip155:8453" // Base
 const sendAttestationUrl = "https://farcasterbot.givepraise.xyz/reply-attestation" // Send attestation URL to user in another cast
 
@@ -100,23 +101,18 @@ app.transaction(frogRoutes.attestTx, async (c) => {
     const {frameData} = c
     const queryData = url.parse(frameData?.url || '', true).query;
     const { reason, channel, recipientAddress, giver, recipientName } = queryData
+    const abiCoder = new AbiCoder();
+    const types = ["address", "uint16", "string", "string", "string", "string", "string", "string", "uint16"];
+    const values = [frameData?.address, 0, channel, "www.givepraise.xyz", recipientName, reason, giver, "Created using Praise bot on Farcaster", 0];
+    const encodedData = abiCoder.encode(types, values) as `0x${string}`;
     return c.contract({
         abi,
         chainId: eipChainId,
         functionName: 'attestPraise',
         args: [
             recipientAddress as `0x${string}`,
-            {
-            from: frameData?.address as `0x${string}`,
-            amount: 0,
-            platform: channel as string,
-            url: "www.givepraise.xyz" as string,
-            context: recipientName as string,
-            skill: reason as string,
-            tag: giver as string,
-            note: "Created using Praise bot on Farcaster",
-            weight: 0
-        }],
+            encodedData
+            ],
         to: attestationSmartContract,
         value: 30000000000000n,
     })
