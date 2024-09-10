@@ -32,7 +32,7 @@ app.frame(frogRoutes.home, (c) => {
     const { recipientName } = queryData
     return c.res({
         action: frogRoutes.finish,
-        image: 'https://giveth.mypinata.cloud/ipfs/QmSPxSt1BaNwKLMNtHmsnXnpnGX9EyzEjkcvU7MAPEFS2e',
+        image: 'https://giveth.mypinata.cloud/ipfs/QmXZgUWie1dDcjq75V6jEWigg6Hifwj4o4VM2sSJGxTwv1',
         // image: (
         //     <div style={imageWrapper}>
         //         {`Let’s spread some love and mint an on-chain Praise attestation for @${recipientName}!`}
