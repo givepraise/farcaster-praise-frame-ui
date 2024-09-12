@@ -18,8 +18,10 @@ export function middleware(request: NextRequest) {
     const userAgent = request.headers.get('user-agent') || ''
     const isBot = bots.some(bot => userAgent.toLowerCase().includes(bot.toLowerCase()))
     const referer = request.headers.get('referer')
-    const isOpenedOnBrowser = referer && referer.indexOf('warpcast') > -1
-    if (!isBot && isOpenedOnBrowser) {
+    const referredByWarpcast = referer && referer.indexOf('warpcast') > -1 // For identifying clicks from Warpcast website
+    const cacheControl = request.headers.get('cache-control')
+    const isCache = cacheControl && cacheControl.indexOf('max-age') > -1 // For identifying clicks from Warpcast phone app
+    if (!isBot && (referredByWarpcast || isCache)) {
         return NextResponse.redirect('https://givepraise.xyz/')
     }
     return NextResponse.next();
