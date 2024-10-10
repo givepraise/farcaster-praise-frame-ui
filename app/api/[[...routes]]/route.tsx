@@ -114,14 +114,16 @@ app.transaction(frogRoutes.attestTx, async (c) => {
     const praiseCast = await fetch(neynarFetchCastUrl + praiseHash, requestOptions)
     const praiseCastData = await praiseCast.json()
     const { channel, author, text, mentioned_profiles } = praiseCastData.cast;
-    console.log('-----------------')
-    console.log('praiseCast', channel?.name, author.username, text, mentioned_profiles)
-    console.log('-----------------')
     const giver = author.username
     // TODO: Should consider only first mention as praise receiver
-    const praiseReceiver = mentioned_profiles.find((profile: any) => profile.username !== process.env.PRAISE_FARCASTER_HANDLE)
+    const praiseHandle = process.env.PRAISE_FARCASTER_HANDLE;
+    const isPraiseHandleReceiver = text.startsWith(`@${praiseHandle} to @${praiseHandle}`);
+    const praiseReceiver = mentioned_profiles.find((profile: any) => isPraiseHandleReceiver ? profile.username === praiseHandle : profile.username !== praiseHandle)
     const recipientName = praiseReceiver.username
     const reason = text.split(praiseReceiver.username)[1]
+    console.log('-----------------')
+    console.log('praiseCast', channel?.name, author.username, praiseReceiver, text, mentioned_profiles)
+    console.log('-----------------')
     const recipientAddress = praiseReceiver.verified_addresses.eth_addresses[0] || praiseReceiver.custody_address
     const abiCoder = new AbiCoder();
     const types = ["address", "uint16", "string", "string", "string", "string", "string", "string", "uint16"];
