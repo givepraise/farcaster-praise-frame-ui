@@ -125,7 +125,7 @@ app.transaction(frogRoutes.attestTx, async (c) => {
     const recipientAddress = praiseReceiver.verified_addresses.eth_addresses[0] || praiseReceiver.custody_address
     const abiCoder = new AbiCoder();
     const types = ["address", "uint16", "string", "string", "string", "string", "string", "string", "uint16"];
-    const values = [frameData?.address, 0, channel?.name, "www.givepraise.xyz", recipientName, reason, giver, "Created using Praise bot on Farcaster", 0];
+    const values = [frameData?.address, 0, channel?.name || '', "www.givepraise.xyz", recipientName, reason, giver, "Created using Praise bot on Farcaster", 0];
     const encodedData = abiCoder.encode(types, values) as `0x${string}`;
     return c.contract({
         abi,
