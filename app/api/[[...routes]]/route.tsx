@@ -120,7 +120,8 @@ app.transaction(frogRoutes.attestTx, async (c) => {
     const isPraiseHandleReceiver = text.startsWith(`@${praiseHandle} to @${praiseHandle}`);
     const praiseReceiver = mentioned_profiles.find((profile: any) => isPraiseHandleReceiver ? profile.username === praiseHandle : profile.username !== praiseHandle)
     const recipientName = praiseReceiver.username
-    const reason = text.split(praiseReceiver.username)[1]
+    const index = text.indexOf(recipientName);
+    const reason = text.substring(index + recipientName.length).trim();
     console.log('-----------------')
     console.log('praiseCast', channel?.name, author.username, praiseReceiver, text, mentioned_profiles)
     console.log('-----------------')
